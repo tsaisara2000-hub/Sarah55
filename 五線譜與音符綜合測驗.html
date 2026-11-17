@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>五線譜與音符綜合測驗</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef2ff;--card:#fff;--ink:#1b2559;--sub:#5a6390;--note:#5b3df5;--ok:#0a9f78;--bad:#e0365b;--tab:#dfe5ff;--okbg:#dff6ee;--badbg:#fde4ea;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10122a;--card:#1a1d3d;--ink:#eef0ff;--sub:#a4abd6;--note:#a99cff;--ok:#36d6a8;--bad:#ff7a98;--tab:#262a55;--okbg:#12382f;--badbg:#45202c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10122a;--card:#1a1d3d;--ink:#eef0ff;--sub:#a4abd6;--note:#a99cff;--ok:#36d6a8;--bad:#ff7a98;--tab:#262a55;--okbg:#12382f;--badbg:#45202c;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans TC',system-ui,sans-serif;min-height:100vh;display:flex;justify-content:center;padding:16px}
+main{width:100%;max-width:680px}
+h1{font-size:clamp(1.5rem,6vw,2.1rem);font-weight:900;margin:8px 0 4px}
+.sub{color:var(--sub);margin:0 0 14px}
+.card{background:var(--card);border-radius:20px;padding:18px;box-shadow:0 2px 0 rgba(0,0,0,.08)}
+.bar{display:flex;justify-content:space-between;color:var(--sub);font-weight:700;margin-bottom:8px;gap:8px}
+.q{font-size:1.2rem;font-weight:700;margin:0 0 8px}
+svg{width:100%;height:auto;display:block}
+.panel{background:#fff;border-radius:14px;display:flex;justify-content:center;align-items:center;padding:12px;min-height:150px}
+.panel img,.panel svg{height:123px;width:auto}
+.staffbox{background:var(--card)}
+.opts{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
+button{font-family:inherit}
+.opt,.go,.snd,.nav{padding:14px;border-radius:14px;border:2px solid var(--tab);background:var(--card);color:var(--ink);font:700 1.1rem inherit;font-family:inherit;cursor:pointer}
+.opt:hover{border-color:var(--note)}
+.opt.sel{border-color:var(--note);background:var(--tab);color:var(--note)}
+.snd{padding:8px 14px;font-size:.95rem;margin-top:4px}
+.go{background:var(--note);color:#fff;border-color:var(--note);width:100%;margin-top:14px}
+.go:disabled{opacity:.45;cursor:not-allowed}
+.nav:disabled{opacity:.4;cursor:default}
+.row{display:flex;gap:10px;margin-top:14px}.row .nav{flex:1}
+.dots{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.dot{width:32px;height:32px;border-radius:50%;border:2px solid var(--tab);background:var(--card);color:var(--sub);font:700 .8rem inherit;font-family:inherit;cursor:pointer;padding:0}
+.dot.done{background:var(--tab);color:var(--ink)}
+.dot.cur{border-color:var(--note);color:var(--note)}
+:is(.opt,.go,.snd,.nav,.dot):focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.big{font-size:3.4rem;font-weight:900;color:var(--note);text-align:center}
+.zone{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--tab);font-weight:700}
+.rev{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--badbg)}
+.rev b{color:var(--bad)}.rev span{display:block;color:var(--ink);font-size:.92rem;margin-top:2px}
+.hint{color:var(--sub);text-align:center;margin:8px 0 0;font-weight:700}
+.form{display:grid;gap:12px}.form label{display:grid;gap:4px;font-weight:700;color:var(--sub)}.r3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.form input,.form select{width:100%;padding:12px;border-radius:12px;border:2px solid var(--tab);background:var(--card);color:var(--ink);font:700 1.1rem inherit;font-family:inherit}
+.form input:focus-visible,.form select:focus-visible{outline:3px solid var(--note);outline-offset:1px}
+.who{text-align:center;font-weight:900;font-size:1.3rem;margin:0 0 4px}
+</style>
+</head>
+<body>
+<main>
+<h1>🎵 五線譜與音符綜合測驗</h1>
+<p class="sub">共 20 題，每題 5 分。全部答完交卷後才會公布分數。</p>
+<div class="card" id="card"></div>
+</main>
+<script>
+const IMG={"eighth": "data:image/png;base64,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", "quarter": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEMAAAB7CAAAAAAKiGJvAAACsElEQVR42u2ZO2gUURSG/3MfM6KgKCSQZSXBxSadWtiJDwg2wYBoUoidTSpttLBIY2UhYiqLtBYiqIVdTCM2ioUESZVA2JWYjUGFGCU79xyrhN153Nm4TZR7uplhPv57XnfmXBL0bAqB8X8wRHpmMJH0ylDfV6k3BuPN2dOP08uRXRnLFWBwXVz7TbM7HYQtBf7doz80i6geGQLIXsgxgYSaC4zA+PcYFPwRGIERGIERGIERGIERGIERGIERGHuMUTqnk7ZBFKm/YYgz7X/EnKvbyxDWBqvNleV648vBocHqcC1nAutlCGv9c3pucWnnzpGRG+fj3PUWWCKy/uA4AGOsNcZaYwG6dg6ornTOPosY7GRj+hhgrVbbpm2koFW3DCfy6hQQG5Uyo3SGke8PVpt3H8KglX3SbVycXpuYM+QKph+KyhmsFy9/jJKicGVmKCZPxdLoQtwqDvqPX2X1wvrz2IL1INTmVglDsDE+H7En9Sg9yVXZkNx8GyWeEyZyh/b7GU4/mYkTXxERKoc73arSQlfugEs6ztAB8TLUdCNy/naAk+nMSR0nNPtJK6+R/tCZ6qmxv8PTpvKf2Gk5cyL1VupKZqmsw6rbxJ64iPr2SbwylGmNjbD2MbC+TP6ouL77qmRvaG15l0LCj2pOwauDibxLcVMTTnt1EOBzB9nW5FQW0ZkfThp9KMwLZTHJzNnGic5G7EYpKmAYg1uSh0j15ESew+QSdATcy0ek+zrLJeQJsRrVZ5LkIjIMbtQQpyRoq6Gu11NVUry/OHlfQbRvR4s2xkbAyGuRRLpkiJP5iwBMHFkbxZYA4MJLEeeka4Y4kdnxge3QR5Xhqy/YI0JESHI2OaD+rr72lfv7ByrVoxrIS6z2Csj7aOhoAC6zsXXBAMAMUhAGkb+CPIxd2R9kMtQ24sBeLQAAAABJRU5ErkJggg==", "half": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEYAAAB7CAAAAADsoakrAAAD90lEQVR42u2aT2hdRRTGvzkzc++NscVKIC8Q0oUYxOqiqLQBSQsWitUERNqdEhFFVy6EdmGx6MaNuNNaWnBXRGili1bszoW1tSWKiyCRUFsoRsJLk9DY5N2Z+Vy8l2fufY+8vOQtUryzu/9+c74zZ87MPfcqohNNUGA6iiE7gQlKsQMYCVCbxgRceuH1P8G8zvZa4N99wDH6zNm2rSEWphOZycnagG/E+KBzojbiYgIsJkOBKTAF5n+IUZDN5+JOWaO4lTAdEsUtNeBNVuxiMhSYArO5XXrhmwLzgGNY+KbAFBuTAlNgCsyDhTHrXN8IgoAC1cYwHlph9ftyaBtDUmvALc2X58p3y3O2b6B/sFu1h6E3Crh4ZWrq5rJzDgCgTf+wrbSBYdAm/HLh4njtrVm0pgvwU1OmDWu81uWz538gxHrlFYRpitgsQqyT9WIIPX3q9B0oS6YAaCro3bdn/44rl7+pqOZebGye/GoAsLFUm1XoOXGreu2UMhHeYsg8gOaU5XeASNcgRiN59w/Spz6kKccQ40juCTSlzI0gNjWKtsDoddJVq+cujCPCfp81pwkmhMWDsKKUiIiKFZ46R3pf72MSZh2Y4NxhRCt6InSdmGf4r47vwyQsRlqKcvwYXbquZ/gq6cLqy6eR4LVWGMcf45ot2mDHZ8sZCB1nnlAJ3sh9Z8hjgq88D4PaKI9OMHu/4+wBGINP6NbEOF6CrcYKHvkiq4es8PYQrMbOubB23PhwBHHVLXtvrHZttY8bg4jFYCynKY9xnOjWWsQovL3ANNcDz/fAilh8G1wLzEfVG7tO5rzClOkHgBGxavBuC2uC362MWJQu02fUe8+bL8IaEbE4lnNwHuP56zalDXZN5AQ58ut+2Go4Rb/njclhUp6BNdhzK9ud97wzhlpoW7wScuOUxzi+j0Q9PZ2lOPLsAHQtsnVyrUFTFhPIUcT4LqPIe06+ilowiUQ43iCpAVN5Fth1b5XNISXPlGBqFB3h0H0XWmHuPQ68FOpJIDhy/BCQyEoaxN5ZNlLymLmSwlBasyY4sny0G7ExNVtiDP3VRFIDZmm30vonVsjgU3Lp88cgkYhZycij5aaUhrh5D4l6brF2dO4ZIDFaxIjoSPDQ8UpzSsOAX09MgoPf/8Pl3z49AMSREi1amwgwh39mM780mQyeR9GVADtHnrSArqZ1YwH0vnk1nzbWmFNh+WVIFAOwSVcUGS0KwKPDX96uunx9GAYufNib2UclD+87OcH6AtO8NdTFqTBz4drs/ELcvW379r5SqdTXoxCopL3yevU7cLhvo/opJ632dk2q9GCgCIAQqJSCUhsq9tfLGWr9W0i1pX7H+BcIwfD2We7SDAAAAABJRU5ErkJggg==", "whole": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFYAAAB7CAAAAADLDyjDAAAEGUlEQVR42u2azWucVRTGn3M/3omZ2GDSqmlqK22MoBYsbcQvhK5E6EJQo90oIcUq7hRX3XShIPQfEBc2uBAltLQ7wSgoBSNpRCsFQa2ITdMmsSHNh528957jYjIz71dmxooL4b6rgffe333uuec89wwzJPgvHoWADdiADdiADdiADdiADdiADdiADdiADdiADdiADdiADdiADdiADdiA/X9gTbsDqz8uUpujSVriRAQgRQBEGCCilvjmWGHo2mdel1I9ZMyabhErIhpwszOzV2YW1paX19BZLnf29vX1b+8rAx6K/jlWvAHWvpk8c9HFmVfa3jn85BNbAbe5ZCl82ImsfDk6qACyALb1lwEg6ogioxUA7Dp8dkHEcfH8YrVeY+7k+DRAltX6vtd27Lxt9uof57/7CZaZSMh4B9z33NF7wapdtexl+UQ/YKzRyuLoUu1F5dM9sEYppZQy1gK9x5clLlJbgHUiZ/YCJtJKaYNhkdh57+KYReZeB6zaeLQB9n8tntvBOlkYASJdnUm9v4lLRvyjLTCqDo7QcULEt8Z6ufgwTG1mhLcbVBHxsZy7O8FV1mJkVbgV1svUXSjpmhrV8QO71IBYzt2uI90QbPHsXzm9yJ7WtfvRWY+exeMVzkiJ5f2kXKUsXvLZRENW7ChK9RCoCK/mTpqdP9g4tir3naxcZENQMjo54Xg+gZx8ZVVikNKq6/sMN5vMYxWbKpBSPtM1P3WQk1XL0coHzWxc1NoEuZzJ5itoNOWM5GhiVcnmWFy7pCQxg1Apsid6dJtLyaXfF5teOktpfYQrha63fW8qekSxb4pdZ+EU+VfWeaw390CnVlelptjutFqmC5eJCwR3IXkEzL3NsIQdu1O7Yzv/eeG5pW8zjf3dQptjfflwOuUYHzoqxKZz45DyTfzWy0w/JTNdGXVaXLYgYjmSrDNDA4sZt0G2gsaRLDNl8MBq1lDZyyGUku74cXZp5CrzvYYtVrnHJE5zWa7uRH1tXcJIzsqRr/h3oRI71NZ8kuE6Pt3wMGswnHO5PJa9jHWjYaikdcdJSW3SydO10OoIeHO9tY2LsJOpA6AO3Tg1vHFdvN+QxOsyEW04mNUYGJc8teiKFCcrx7qAqLZRq/HQ2eqKccwilx4ko5QyltD11nybV6SIeJGpF+zGjV61c7z8xWrVUiundsNoow1gXzwv+fTbvP0Q1pge++wXgKwwIJq96ds1MNj/54XpH9EpNwUYfOaVffDFjdhmPRgTYWHy1OTPvmpRpH3NgxQDpT2PPT/Ui/w10LJjZNHAzcnpb6fn2dVt1xpSfY8MHRiKAKfUrfS3LNAAKiuLN+YWl24sYOsdXT093T1bIrToQ1t148JFs8WTon/X5AMCCASy4YfUzjcICv9jBP4GPTB5tOEMJXQAAAAASUVORK5CYII=", "qrest": "data:image/png;base64,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"};
+const NAMES=['Do','Re','Mi','Fa','Sol','La','Si','高音 Do','高音 Re','高音 Mi','高音 Fa'];
+const LET=['C','D','E','F','G','A','B','C','D','E','F'];
+const FREQ=[261.63,293.66,329.63,349.23,392,440,493.88,523.25,587.33,659.25,698.46];
+const ZONES=['第一區　音符與休止符','第二區　4/4 拍的拍數','第三區　高音譜表'];
+const Y0=180,G=8,yOf=s=>Y0-(s-2)*G;
+const where=s=>s==0?'在下加一線上':s==1?'在下加一線和第一線之間':s%2==0?`在第 ${s/2} 線上`:`在第 ${(s-1)/2} 間`;
+const NT=['全音符','二分音符','四分音符','八分音符'],RT=['全休止符','二分休止符','四分休止符','八分休止符'];
+const BT=['1 拍','2 拍','3 拍','4 拍'];
+const Q=[
+{z:0,t:'這是什麼音符？',d:'whole',o:NT,a:'全音符',e:'空心符頭、沒有符幹，是全音符。'},
+{z:0,t:'這是什麼音符？',d:'half',o:NT,a:'二分音符',e:'空心符頭加一根符幹，是二分音符。'},
+{z:0,t:'這是什麼音符？',d:'quarter',o:NT,a:'四分音符',e:'實心符頭加一根符幹，是四分音符。'},
+{z:0,t:'這是什麼音符？',d:'eighth',o:NT,a:'八分音符',e:'實心符頭、符幹上多了一條旗尾，是八分音符。'},
+{z:0,t:'這是什麼休止符？',d:'qrest',o:RT,a:'四分休止符',e:'彎彎折折的符號是四分休止符。'},
+{z:1,t:'在 4/4 拍中，這個音符是幾拍？',d:'quarter',o:BT,a:'1 拍',e:'4/4 拍以四分音符為一拍，所以是 1 拍。'},
+{z:1,t:'在 4/4 拍中，這個音符是幾拍？',d:'whole',o:BT,a:'4 拍',e:'全音符占滿一整小節，是 4 拍。'},
+{z:1,t:'在 4/4 拍中，這個音符是幾拍？',d:'half',o:BT,a:'2 拍',e:'二分音符是全音符的一半，是 2 拍。'},
+{z:1,t:'在 4/4 拍中，這個音符是幾拍？',d:'eighth',o:['0.5 拍（半拍）','1 拍','2 拍','0.25 拍'],a:'0.5 拍（半拍）',e:'八分音符是四分音符的一半，是半拍。'},
+{z:1,t:'在 4/4 拍中，這個休止符要安靜幾拍？',d:'qrest',o:['1 拍','2 拍','4 拍','0.5 拍'],a:'1 拍',e:'四分休止符和四分音符一樣長，停 1 拍。'}
+];
+[0,1,2,3,4,5,6,7,8,10].forEach(s=>{const nm=1;
+Q.push({z:2,s,t:'這個音的唱名是什麼？',d:'staff',nm,a:NAMES[s],
+e:`這個音${where(s)}，唱名是 ${NAMES[s]}。`})});
+const card=document.getElementById('card');
+let cur=0,ans=[],OPT=[],ac;
+const shuffle=a=>{a=[...a];for(let j=a.length-1;j>0;j--){const k=Math.random()*(j+1)|0;[a[j],a[k]]=[a[k],a[j]]}return a};
+function mkOpts(q){if(q.d!='staff')return q.o;const pool=q.nm?NAMES:[...'CDEFGAB'];return shuffle([q.a,...shuffle(pool.filter(x=>x!=q.a)).slice(0,3)])}
+function play(s){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.type='triangle';o.frequency.value=FREQ[s];g.gain.setValueAtTime(0,ac.currentTime);g.gain.linearRampToValueAtTime(.35,ac.currentTime+.02);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+1.1);o.connect(g).connect(ac.destination);o.start();o.stop(ac.currentTime+1.15)}catch(e){}}
+const L=(x1,x2,y,w=2)=>`<line x1="${x1}" x2="${x2}" y1="${y}" y2="${y}" stroke="var(--ink)" stroke-width="${w}"/>`;
+function sym(d){return `<div class="panel"><img src="${IMG[d]}" alt="${d=='qrest'?'休止符圖示':'音符圖示'}"></div>`}
+function staff(s){let h='';for(let k=0;k<5;k++)h+=L(30,570,yOf(2+2*k),1.5);
+h+=`<path d="M434 2Q464 -103 464 -170Q464 -223 427.0 -257.0Q390 -291 337 -291Q287 -291 250.0 -261.5Q213 -232 213 -190Q213 -160 233.5 -133.5Q254 -107 283.5 -107.0Q313 -107 331.5 -128.5Q350 -150 350 -178Q350 -240 280 -240Q298 -268 338 -268Q353 -268 368.5 -263.5Q384 -259 401.0 -248.0Q418 -237 428.5 -213.5Q439 -190 439 -157Q439 -136 411 -6Q389 -12 356 -12Q259 -12 189.5 60.0Q120 132 120 232Q120 267 131.5 303.0Q143 339 157.5 366.5Q172 394 200.5 428.5Q229 463 248.5 483.5Q268 504 303 539Q280 621 280 689Q280 779 313.0 839.5Q346 900 379 900Q389 900 401.5 887.0Q414 874 426.0 851.0Q438 828 446.5 790.5Q455 753 455 710Q455 551 342 447L368 329Q384 332 397 332Q458 332 500.0 282.5Q542 233 542 162Q542 44 434 2ZM426 746Q426 801 394 801Q358 801 333.0 748.0Q308 695 308 630Q308 588 321 557Q359 580 392.5 639.5Q426 699 426 746ZM498 128Q498 183 466.0 216.0Q434 249 383 249L428 23Q498 52 498 128ZM407 17 361 247Q334 241 311.5 214.0Q289 187 289 158Q289 143 295.0 128.5Q301 114 309.5 104.0Q318 94 327.0 86.0Q336 78 342.0 74.5Q348 71 348 71L340 66Q307 75 277.5 106.0Q248 137 248 184Q248 231 277.5 270.5Q307 310 343 323L325 430Q168 299 168 177Q168 104 223.0 55.0Q278 6 348 6Q365 6 407 17Z" fill="var(--ink)" transform="translate(28.41 180.94) scale(0.0966 -0.0966)"/>`;
+const y=yOf(s),up=s<6,X=330;if(s==0)h+=L(X-20,X+20,y);
+h+=`<line x1="${up?X+11:X-11}" x2="${up?X+11:X-11}" y1="${y}" y2="${up?y-56:y+56}" stroke="var(--note)" stroke-width="3"/><ellipse cx="${X}" cy="${y}" rx="12" ry="8" fill="var(--note)" transform="rotate(-18 ${X} ${y})"/>`;
+return `<svg viewBox="0 40 600 200" role="img" aria-label="高音譜表上的一個音符">${h}</svg>`}
+function show(){const q=Q[cur],left=ans.filter(x=>x==null).length;
+card.innerHTML=`<div class="dots">${Q.map((_,k)=>`<button class="dot${ans[k]!=null?' done':''}${k==cur?' cur':''}" data-k="${k}" aria-label="第 ${k+1} 題">${k+1}</button>`).join('')}</div>
+<div class="bar"><span>${ZONES[q.z]}</span><span>第 ${cur+1} / 20 題</span></div><p class="q">${q.t}</p>${q.d=='staff'?staff(q.s):sym(q.d)}
+<div class="opts">${OPT[cur].map(o=>`<button class="opt${ans[cur]==o?' sel':''}">${o}</button>`).join('')}</div>
+<div class="row"><button class="nav" id="pv" ${cur==0?'disabled':''}>上一題</button><button class="nav" id="nx" ${cur==19?'disabled':''}>下一題</button></div>
+${cur==19?`<button class="go" id="sub" ${left?'disabled':''}>交卷看成績</button><p class="hint">${left?`還有 ${left} 題還沒作答，可以按上方號碼回去作答`:'全部答完了，可以交卷囉！'}</p>`:''}`;
+
+card.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{ans[cur]=b.textContent;show()});
+card.querySelectorAll('.dot').forEach(b=>b.onclick=()=>{cur=+b.dataset.k;show()});
+document.getElementById('pv').onclick=()=>{cur--;show()};document.getElementById('nx').onclick=()=>{cur++;show()};
+const sb=document.getElementById('sub');if(sb)sb.onclick=end}
+function end(){const res=Q.map((q,k)=>({n:k+1,z:q.z,ok:ans[k]==q.a,q}));const score=res.filter(r=>r.ok).length*5;
+const zs=[0,1,2].map(z=>{const r=res.filter(x=>x.z==z);return[ZONES[z],r.filter(x=>x.ok).length,r.length]});const wrong=res.filter(x=>!x.ok);
+const m=score==100?'滿分！你是音樂小天才！🏆':score>=80?'很棒！觀念很紮實！⭐':score>=60?'及格了，看看下面答錯的題目吧！':'沒關係，多練習幾次一定會進步！💪';
+card.innerHTML=`<p class="who">${info.y} 年 ${info.c} 班　${info.n} 號　${esc(info.m)}</p><div class="big">${score} 分</div><p style="text-align:center;font-weight:700">${m}</p>${zs.map(z=>`<div class="zone"><span>${z[0]}</span><span>${z[1]} / ${z[2]}</span></div>`).join('')}<p class="hint">請把這個畫面給老師確認，不要關掉網頁。</p>`;
+window.scrollTo({top:0,behavior:'smooth'})}
+let info=null;const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function intro(){card.innerHTML=`<p class="q">先填寫你的資料</p><div class="form"><div class="r3"><label>年級<select id="gy">${[1,2,3,4,5,6].map(n=>`<option value="${n}"${n==5?' selected':''}>${n} 年級</option>`).join('')}</select></label><label>班級<input id="gc" type="number" inputmode="numeric" min="1" max="30" placeholder="例如 3"></label><label>座號<input id="gn" type="number" inputmode="numeric" min="1" max="50" placeholder="例如 12"></label></div><label>姓名<input id="gm" type="text" maxlength="20" placeholder="請輸入姓名"></label></div><button class="go" id="st" disabled>開始測驗</button>`;
+const $=i=>document.getElementById(i),chk=()=>{$('st').disabled=!($('gc').value>0&&$('gn').value>0&&$('gm').value.trim())};
+['gy','gc','gn','gm'].forEach(i=>$(i).oninput=chk);
+$('st').onclick=()=>{info={y:$('gy').value,c:+$('gc').value,n:+$('gn').value,m:$('gm').value.trim()};init()}}
+function init(){const tail=shuffle(Q.slice(10));Q.splice(10,10,...tail);cur=0;ans=Array(20).fill(null);OPT=Q.map(mkOpts);show();window.scrollTo({top:0})}
+intro();
+</script>
+</body>
+</html>
